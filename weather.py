@@ -68,7 +68,10 @@ moon = astronomy_json['moon_phase']['phaseofMoon']
 temp_c = conditions_json['current_observation']['temp_c']
 icon = conditions_json['current_observation']['icon']
 
+sup = str.maketrans("-0123456789", "⁻⁰¹²³⁴⁵⁶⁷⁸⁹")
+sub = str.maketrans("-0123456789", "₋₀₁₂₃₄₅₆₇₈₉")
+
 weather_icon = weather(icon)
 moon_icon = lunar_phase(moon)
 
-print("{} {} {}-{}-{}".format(weather_icon, moon_icon, low, temp_c, high))
+print("{} {}{}/{} {}".format(weather_icon, temp_c, high.translate(sup), low.translate(sub), moon_icon))
