@@ -4,74 +4,68 @@ import requests
 import json
 
 KEY = ""
-LOCATION = "es/Palencia"
+LOCATION = "303119"
 
-def wu(feature, KEY, LOCATION):
-    wu_url = "http://api.wunderground.com/api/{}/{}/q/{}.json".format(KEY, feature, LOCATION)
-    wu_response = requests.get(wu_url)
-    wu_json = json.loads(wu_response.text)
-    return wu_json
+def aw(feature):
+	aw_url = "https://dataservice.accuweather.com/{}/{}?apikey={}&language=es-es&details=true&metric=true".format(feature, LOCATION, KEY) #http?
+	aw_response = requests.get(aw_url)
+	aw_json = json.loads(aw_response.text)
+	return aw_json
 
 def weather(icon):
-    if icon == "sunny" or "clear":
-        weather_icon = "🌣 Sunny"
-    elif icon == "mostlysunny" or "partlysunny":
-        weather_icon =  "🌤 Partly Sunny"    
-    elif icon == "mostlycloudy" or "partlycloudy":
-        weather_icon =  "⛅ Partly Cloudy"
-    elif icon == "cloudy":
-        weather_icon =  "☁ Cloudy"
-    elif icon == "rain" or "chancerain":
-        weather_icon =  "🌧 Rain"
-    elif icon == "sleet" or "chancesleet":
-        weather_icon =  "🌨 Sleet"
-    elif icon == "snow" or "chancesnow" or "flurries" or "chanceflurries":
-        weather_icon =  "❄ Snow"
-    elif icon == "tstorms"  or "chancetstorms":
-        weather_icon =  "🌩 Storm"
-    elif icon == "fog" or "hazy":
-        weather_icon =  "🌁 Fog"
-    elif icon == "unknown":
-        weather_icon =  "Unknown"
-    else:
-        weather_icon = icon
-    return weather_icon
+	if icon == 1: #"sunny" or icon == "clear":
+		weather_icon = "\N{black sun with rays}"
+	elif icon in (2,3,33,34): #"mostlysunny" or icon in "partlysunny":
+		weather_icon = "\N{white sun with small cloud}"
+	elif icon in (4,5,6,35,36): #"mostlycloudy" or icon in "partlycloudy":
+		weather_icon = "\N{sun behind cloud}"
+	elif icon in (7,8,37,38): #"cloudy":
+		weather_icon = "\N{cloud}"
+	elif icon in (12,13,14,18,39,40): #"rain" or icon in "chancerain":
+		weather_icon = "\N{cloud with rain}"
+	elif icon in (24,25,26,29): #"sleet" or icon in "chancesleet":
+		weather_icon = "\N{cloud with snow}"
+	elif icon in (19,20,21,22,23,43,44): #"snow" or icon in "chancesnow" or icon in "flurries" or icon in "chanceflurries":
+		weather_icon = "\N{snowflake}"
+	elif icon in (15,16,17,41,42): #"tstorms" or icon in "chancetstorms":
+		weather_icon = "\N{cloud with lightning}"
+	elif icon in 11:
+		weather_icon = "\N{fog}"
+	else:
+		weather_icon = icon
+	return weather_icon
 
 def lunar_phase(moon):
-    if moon == "New":
-        moon_icon = "🌑 new"
-    elif moon == "Waxing Crescent":
-        moon_icon = "🌒 waxing crescent"
-    elif moon == "First Quarter":
-        moon_icon = "🌓 first quarter"
-    elif moon == "Waxing Gibbous":
-        moon_icon = "🌔 waxing gibbous"
-    elif moon == "Full":
-        moon_icon = "🌕 full"    
-    elif moon == "Waning Gibbous":
-        moon_icon = "🌖 waning gibbous"
-    elif moon == "Last Quarter":
-        moon_icon = "🌗 last quarter"
-    elif moon == "Waning Crescent":
-        moon_icon = "🌘 waning crescent"
-    else:
-        moon_icon = moon
-    return moon_icon
+	if moon == "NewMoon":
+		moon_icon = "\N{new moon symbol}"
+	elif moon == "WaxingCrescent":
+		moon_icon = "\N{waxing crescent moon symbol}"
+	elif moon == "FirstQuarter":
+		moon_icon = "\N{first quarter moon symbol}"
+	elif moon == "WaxingGibbous":
+		moon_icon = "\N{waxing gibbous moon symbol}"
+	elif moon == "Full":
+		moon_icon = "\N{full moon symbol}"    
+	elif moon == "WaningGibbous":
+		moon_icon = "\N{waning gibbous moon symbol}"
+	elif moon == "LastQuarter":
+		moon_icon = "\N{last quarter moon symbol}"
+	elif moon == "WaningCrescent":
+		moon_icon = "\N{waning crescent moon symbol}"
+	else:
+		moon_icon = moon
+	return moon_icon
 
-forecast_json = wu("forecast", KEY, LOCATION)
-astronomy_json = wu("astronomy", KEY, LOCATION)
-conditions_json = wu("conditions", KEY, LOCATION)
+forecast_json = aw("forecasts/v1/daily/1day")
+conditions_json = wu("currentconditions/v1")
 
-low = forecast_json['forecast']['simpleforecast']['forecastday'][0]['low']['celsius']
-high = forecast_json['forecast']['simpleforecast']['forecastday'][0]['high']['celsius']
-moon = astronomy_json['moon_phase']['phaseofMoon']
-temp_c = conditions_json['current_observation']['temp_c']
-icon = conditions_json['current_observation']['icon']
+low = str(forecast_json['DailyForecasts'][0]['Temperature']['Minimum']['Value'])
+high = str(forecast_json['DailyForecasts'][0]['Temperature']['Maximum']['Value'])
+moon = forecast_json['DailyForecasts'][0]['Moon']['Phase']
+temp_c = conditions_json[0]['Temperature']['Metric']['Value']
+icon = conditions_json[0]['WeatherIcon']
 
-sup = str.maketrans("-0123456789", "⁻⁰¹²³⁴⁵⁶⁷⁸⁹")
-sub = str.maketrans("-0123456789", "₋₀₁₂₃₄₅₆₇₈₉")
-
-weather_icon = weather(icon)
-moon_icon = lunar_phase(moon)
+sup = str.maketrans(".-0123456789", "ᐧ⁻⁰¹²³⁴⁵⁶⁷⁸⁹")
+sub = str.maketrans(".-0123456789", ".₋₀₁₂₃₄₅₆₇₈₉")
 
 print("{} {}{}/{} {}".format(weather_icon, temp_c, high.translate(sup), low.translate(sub), moon_icon))
